@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MeroHisab | Expenses</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-page="expenses">
+
+  <div id="sidebarMount"></div>
+  <div class="main">
+    <div id="topbarMount"></div>
+    <main class="page" id="pageContent"></main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/txpage.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const { npr } = UI;
+      const { sum } = TxPage;
+
+      TxPage.init({
+        title: 'Expenses',
+        subtitle: 'Track what you spend to keep the shop running.',
+        noun: 'Expense', entity: 'expense', entityPlural: 'expenses',
+        addLabel: 'New expense',
+        searchPlaceholder: 'Search expenses',
+        defaultRange: '30d',
+
+        types: ['expense'],
+        columns: ['date', 'desc', 'category', 'amount', 'status', 'actions'],
+
+        statusLabels: { Completed: 'Paid', Pending: 'Unpaid' },
+
+        primaryFilter: {
+          field: 'category', allLabel: 'All categories',
+          options: Store.CATEGORIES.map(c => [c, c])
+        },
+
+        form: { defaultType: 'expense', types: [['expense', 'Expense']] },
+
+        // Bar chart of spending per category (click a bar to filter)
+        breakdown: {
+          title: 'Spending by category',
+          subtitle: 'Click a category to filter the list below'
+        },
+
+        summary: (rows, ctx) => {
+          const total = sum(rows);
+          const unpaid = sum(rows, t => t.status === 'Pending');
+          const unpaidCount = rows.filter(t => t.status === 'Pending').length;
+
+          const byCat = {};
+          rows.forEach(t => { const c = t.category || 'Other'; byCat[c] = (byCat[c] || 0) + t.amount; });
+          const top = Object.entries(byCat).sort((a, b) => b[1] - a[1])[0];
+
+          return [
+            { label: 'Total expenses', icon: 'bi-receipt', value: npr(total), meta: `${rows.length} expense${rows.length === 1 ? '' : 's'} in view`, metaIcon: 'bi-list-ul' },
+            { label: 'Daily average',  icon: 'bi-calendar3', value: npr(Math.round(total / ctx.days)), meta: `Over ${ctx.days} day${ctx.days === 1 ? '' : 's'}`, metaIcon: 'bi-clock' },
+            { label: 'Biggest category', icon: 'bi-pie-chart', value: top ? UI.esc(top[0]) : '—', meta: top ? npr(top[1]) : 'No expenses yet', metaIcon: 'bi-arrow-up-right', small: true },
+            { label: 'Unpaid bills', icon: 'bi-exclamation-circle', value: npr(unpaid), meta: `${unpaidCount} bill${unpaidCount === 1 ? '' : 's'} waiting`, metaIcon: 'bi-clock' }
+          ];
+        }
+      });
+    });
+  </script>
+</body>
+</html>
