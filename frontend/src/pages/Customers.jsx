@@ -5,6 +5,28 @@ import api, { errorMessage } from '../api';
 
 const fmt = (n) => `NPR ${Number(n).toLocaleString('en-NP')}`;
 
+// Small button styling (rounded buttons + soft hover on edit/delete)
+const BTN_CSS = `
+.cx-new-btn, .cx-rec-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  border-radius: 999px; padding: 10px 18px; font-weight: 600;
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.cx-new-btn { box-shadow: 0 4px 12px rgba(17, 26, 46, .18); }
+.cx-new-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(17, 26, 46, .24); }
+.cx-new-btn:active { transform: translateY(0); }
+.cx-act {
+  width: 34px; height: 34px; border-radius: 8px;
+  display: inline-grid; place-items: center;
+  transition: background .15s ease;
+}
+.cx-act:hover { background: var(--surface-2, #f3f4f6); }
+.cx-act.del:hover { background: var(--red-soft, #fee2e2); }
+.cx-new-btn:focus-visible, .cx-rec-btn:focus-visible, .cx-act:focus-visible {
+  outline: 2px solid var(--blue, #2563eb); outline-offset: 2px;
+}
+`;
+
 export default function Customers({ refreshKey }) {
   const [query, setQuery] = useState('');
   const [list, setList]   = useState([]);
@@ -83,6 +105,8 @@ export default function Customers({ refreshKey }) {
 
   return (
     <div className="page">
+      <style>{BTN_CSS}</style>
+
       {/* Header */}
       <div className="page-head" style={{ alignItems: 'center' }}>
         <div>
@@ -90,10 +114,10 @@ export default function Customers({ refreshKey }) {
           <p className="page-sub">ग्राहक र उधारो व्यवस्थापन</p>
         </div>
         <div style={{ display: 'flex', gap: 12 }}>
-          <Link to="/record" className="btn btn-secondary">
+          <Link to="/record" className="btn btn-secondary cx-rec-btn">
             <Mic size={14} /> Record Tx
           </Link>
-          <button className="btn btn-primary" onClick={openAddModal}>
+          <button className="btn btn-primary cx-new-btn" onClick={openAddModal}>
             <Plus size={16} /> New Customer
           </button>
         </div>
@@ -178,10 +202,10 @@ export default function Customers({ refreshKey }) {
               </div>
               
               <div style={{ display: 'flex', gap: 8, paddingLeft: 24 }} onClick={e => e.preventDefault()}>
-                <button className="icon-btn" onClick={(e) => openEditModal(e, c)} title="Edit">
+                <button className="icon-btn cx-act" onClick={(e) => openEditModal(e, c)} title="Edit">
                   <Edit2 size={15} />
                 </button>
-                <button className="icon-btn" style={{ color: 'var(--red)' }} onClick={(e) => handleDelete(e, c.id)} title="Delete">
+                <button className="icon-btn cx-act del" style={{ color: 'var(--red)' }} onClick={(e) => handleDelete(e, c.id)} title="Delete">
                   <Trash2 size={15} />
                 </button>
               </div>
